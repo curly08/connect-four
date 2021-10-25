@@ -1,0 +1,1 @@
+For this project, I will be following TDD to recreate the game Connect Four on the command line.
