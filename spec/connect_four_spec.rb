@@ -137,10 +137,6 @@ describe ConnectFour do
   describe '#place_mark' do
     let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
 
-    # before do
-    #   allow(display).to receive(:update_display)
-    # end
-
     context 'when input is 3' do
       it 'sends message to Display' do
         input = 3
@@ -155,6 +151,21 @@ describe ConnectFour do
         input = 3
         chosen_column = game.chosen_spots[input.to_i - 1]
         expect { game.place_mark(player.mark, input) }.to change { chosen_column.size }.from(0).to(1)
+      end
+    end
+  end
+end
+
+describe Display do
+  subject(:display) { described_class.new }
+
+  describe '#update_display' do
+    context 'column 3, row 5 is selected' do
+      it 'returns row with inserted mark' do
+        x = 10
+        y = 4
+        mark = 'x'
+        expect { display.update_display(x, y, mark) }.to change { display.rows[y] }.from('|   |   |   |   |   |   |   |').to('|   |   | x |   |   |   |   |')
       end
     end
   end
