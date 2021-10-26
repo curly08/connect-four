@@ -9,6 +9,32 @@ require_relative '../lib/display'
 describe ConnectFour do
   subject(:game) { described_class.new }
 
+  describe '#play_game' do
+    context 'when #game_over? returns true' do
+      before do
+        allow(game).to receive(:establish_players)
+        allow(game).to receive(:game_over?).and_return(true)
+      end
+
+      it 'does not #play_move' do
+        expect(game).not_to receive(:play_move)
+        game.play_game
+      end
+    end
+
+    context 'when #game_over? returns false twice' do
+      before do
+        allow(game).to receive(:establish_players)
+        allow(game).to receive(:game_over?).and_return(false, false, true)
+      end
+      
+      it '#play_move twice' do
+        expect(game).to receive(:play_move).twice
+        game.play_game
+      end
+    end
+  end
+
   # establish players
   describe '#establish_players' do
     context 'two players are created' do
