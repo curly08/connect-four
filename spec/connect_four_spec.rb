@@ -104,4 +104,31 @@ describe ConnectFour do
       end
     end
   end
+
+  # check if column is full
+  describe '#column_full?' do
+    context 'column is full' do
+      before do
+        game.instance_variable_set(:@chosen_spots, [[],[],[],[],[1,2,3,4,5,6],[],[]])
+      end
+
+      it 'returns true' do
+        column = 5
+        column_check = game.column_full?(column)
+        expect(column_check).to eq(true)
+      end
+    end
+
+    context 'column is not full' do
+      before do
+        game.instance_variable_set(:@chosen_spots, [[],[],[],[],[1,2,3,4,5],[],[]])
+      end
+
+      it 'returns false' do
+        column = 5
+        column_check = game.column_full?(column)
+        expect(column_check).to eq(false)
+      end
+    end
+  end
 end
