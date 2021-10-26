@@ -5,7 +5,6 @@ class ConnectFour
   def initialize
     # @display = <<~HEREDOC
 
-
     #   +-+-+-+-+-+-+-+
     #   | | | | | | | |
     #   +-+-+-+-+-+-+-+
@@ -19,7 +18,6 @@ class ConnectFour
     #   +-+-+-+-+-+-+-+
     #   | | | | | | | |
     #   +-+-+-+-+-+-+-+
-
 
     # HEREDOC
     @red_circle = "\u{1F534}".encode('utf-8')
@@ -40,6 +38,17 @@ class ConnectFour
   end
 
   def input_valid?(input)
+    if [*1..7].include?(input.to_i)
+      return true unless column_full?(input.to_i)
+
+      puts "That column is full. Enter an open column like: (#{@open_columns})"
+    else
+      puts "That is not a valid input. Enter an open column like: (#{@open_columns})"
+    end
+    false
+  end
+
+  def column_full?(column)
 
   end
 
