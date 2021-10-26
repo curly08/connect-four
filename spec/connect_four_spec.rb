@@ -4,6 +4,7 @@
 
 require_relative '../lib/connect_four'
 require_relative '../lib/player'
+require_relative '../lib/display'
 
 describe ConnectFour do
   subject(:game) { described_class.new }
@@ -25,7 +26,7 @@ describe ConnectFour do
 
   # player plays move
   describe '#play_move' do
-    let(:player) { instance_double(Player, 'Matt') }
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
 
     context 'when player picks valid column(1..7) to place mark' do
       before do
@@ -67,7 +68,7 @@ describe ConnectFour do
       end
 
       it 'returns true' do
-        input = '4'
+        input = 4
         verified_input = game.input_valid?(input)
         expect(verified_input).to eq(true)
       end
@@ -85,7 +86,7 @@ describe ConnectFour do
       end
 
       it 'returns false' do
-        input = '8'
+        input = 8
         verified_input = game.input_valid?(input)
         expect(verified_input).to eq(false)
       end
@@ -128,6 +129,32 @@ describe ConnectFour do
         column = 5
         column_check = game.column_full?(column)
         expect(column_check).to eq(false)
+      end
+    end
+  end
+
+  # place mark in lowest available space in selected column
+  describe '#place_mark' do
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
+
+    # before do
+    #   allow(display).to receive(:update_display)
+    # end
+
+    context 'when input is 3' do
+      it 'sends message to Display' do
+        input = 3
+        x = 10
+        y = 0
+        display = game.display
+        expect(display).to receive(:update_display).with(x, y, player.mark)
+        game.place_mark(player.mark, input)
+      end
+
+      it 'adds mark to chosen_spots[2]' do
+        input = 3
+        chosen_column = game.chosen_spots[input.to_i - 1]
+        expect { game.place_mark(player.mark, input) }.to change { chosen_column.size }.from(0).to(1)
       end
     end
   end
