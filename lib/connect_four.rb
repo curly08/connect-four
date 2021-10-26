@@ -2,26 +2,25 @@
 
 # class to play a game of Connect Four
 class ConnectFour
+  attr_accessor :chosen_spots, :string_column_locations, :display
+  attr_reader :red_circle, :blue_circle
+
   def initialize
-    # @display = <<~HEREDOC
-
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-    #   | | | | | | | |
-    #   +-+-+-+-+-+-+-+
-
-    # HEREDOC
+    @display = Display.new
     @red_circle = "\u{1F534}".encode('utf-8')
     @blue_circle = "\u{1F535}".encode('utf-8')
+    @chosen_spots = Array.new(7, [])
+    @string_column_locations = [2, 6, 10, 14, 18, 22, 26]
+    
+    # {
+    #   "1": 2,
+    #   "2": 6,
+    #   "3": 10,
+    #   "4": 14,
+    #   "5": 18,
+    #   "6": 22,
+    #   "7": 26
+    # }
   end
 
   def establish_players
@@ -33,13 +32,13 @@ class ConnectFour
 
   def play_move(player, input = nil)
     puts "#{player.name}, which column would you like to drop your piece into?"
-    input = gets.chomp until input_valid?(input)
-    place_mark(player, input)
+    input = gets.chomp until input_valid?(input.to_i)
+    place_mark(player.mark, input.to_i)
   end
 
   def input_valid?(input)
-    if [*1..7].include?(input.to_i)
-      return true unless column_full?(input.to_i)
+    if [*1..7].include?(input)
+      return true unless column_full?(input)
 
       puts "That column is full. Enter an open column like: (#{@open_columns})"
     else
@@ -52,7 +51,11 @@ class ConnectFour
     @chosen_spots[column - 1].size == 6
   end
 
-  def place_mark(player, input)
-
+  def place_mark(mark, input)
+    x = @string_column_locations[input - 1]
+    y = @chosen_spots[input - 1].size
+    # get display row
+    @display.update_display(x, y, mark)
+    @chosen_spots[input - 1] << mark
   end
 end
