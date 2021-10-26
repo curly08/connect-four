@@ -11,16 +11,16 @@ class ConnectFour
     @blue_circle = "\u{1F535}".encode('utf-8')
     @chosen_spots = Array.new(7, [])
     @string_column_locations = [2, 6, 10, 14, 18, 22, 26]
-    
-    # {
-    #   "1": 2,
-    #   "2": 6,
-    #   "3": 10,
-    #   "4": 14,
-    #   "5": 18,
-    #   "6": 22,
-    #   "7": 26
-    # }
+  end
+
+  def play_game
+    establish_players
+    @current_player = @player_one
+    until game_over?
+      play_move(@current_player)
+      @current_player = @current_player == @player_one ? @player_two : @player_one
+    end
+    ending_message
   end
 
   def establish_players
@@ -54,8 +54,15 @@ class ConnectFour
   def place_mark(mark, input)
     x = @string_column_locations[input - 1]
     y = @chosen_spots[input - 1].size
-    # get display row
     @display.update_display(x, y, mark)
     @chosen_spots[input - 1] << mark
+  end
+
+  def game_over?
+
+  end
+
+  def ending_message
+
   end
 end
