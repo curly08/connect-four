@@ -49,7 +49,7 @@ class ConnectFour
   end
 
   def column_full?(column)
-
+    @chosen_spots[column - 1].size == 6
   end
 
   def place_mark(player, input)
