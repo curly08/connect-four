@@ -20,6 +20,11 @@ describe ConnectFour do
         expect(game).not_to receive(:play_move)
         game.play_game
       end
+
+      it 'shows display' do
+        expect(game.display).to receive(:show_display)
+        game.play_game
+      end
     end
 
     context 'when #game_over? returns false twice' do
@@ -136,7 +141,7 @@ describe ConnectFour do
   describe '#column_full?' do
     context 'column is full' do
       before do
-        game.instance_variable_set(:@chosen_spots, [[],[],[],[],[1,2,3,4,5,6],[],[]])
+        game.instance_variable_set(:@chosen_spots_by_columns, [[],[],[],[],[1,2,3,4,5,6],[],[]])
       end
 
       it 'returns true' do
@@ -148,7 +153,7 @@ describe ConnectFour do
 
     context 'column is not full' do
       before do
-        game.instance_variable_set(:@chosen_spots, [[],[],[],[],[1,2,3,4,5],[],[]])
+        game.instance_variable_set(:@chosen_spots_by_columns, [[],[],[],[],[1,2,3,4,5],[],[]])
       end
 
       it 'returns false' do
@@ -175,8 +180,161 @@ describe ConnectFour do
 
       it 'adds mark to chosen_spots[2]' do
         input = 3
-        chosen_column = game.chosen_spots[input.to_i - 1]
+        chosen_column = game.chosen_spots_by_columns[input.to_i - 1]
         expect { game.place_mark(player.mark, input) }.to change { chosen_column.size }.from(0).to(1)
+      end
+    end
+  end
+
+  # check if game is over
+  describe '#game_over?' do
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
+
+    context 'when game has been won vertically' do
+      before do
+        # game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y y y x y x], %w[x y x x x x y]])
+        allow(game).to receive(:vertical_win?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(game.game_over?(player)).to be(true)
+      end
+    end
+
+    context 'when game has been won horizontally' do
+      before do
+        allow(game).to receive(:horizontal_win?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(game.game_over?(player)).to be(true)
+      end
+    end
+
+    context 'when game has been won diagonally' do
+      before do
+        allow(game).to receive(:diagonal_win?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(game.game_over?(player)).to be(true)
+      end
+    end
+
+    context 'when game is tied' do
+      before do
+        allow(game).to receive(:tie?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(game.game_over?(player)).to be(true)
+      end
+    end
+
+    context 'when game has not been won or tied' do
+      before do
+        allow(game).to receive(:vertical_win?).and_return(false)
+        allow(game).to receive(:horizontal_win?).and_return(false)
+        allow(game).to receive(:diagonal_win?).and_return(false)
+        allow(game).to receive(:tie?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(game.game_over?(player)).to be(false)
+      end
+    end
+  end
+
+  describe '#vertical_win?' do
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
+
+    context 'when game has been won vertically' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y y y x y x], %w[x y x x x x y]])
+      end
+
+      it 'returns true' do
+        expect(game.vertical_win?(player)).to be(true)
+      end
+    end
+
+    context 'when game has not been won vertically' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y y y x y x], %w[x y x x x y]])
+      end
+
+      it 'returns false' do
+        expect(game.vertical_win?(player)).to be(false)
+      end 
+    end
+  end
+
+  describe '#horizontal_win?' do
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
+
+    context 'when game has been won horizontally' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x x y x y x], %w[y y y y x x], %w[x x x x x x], %w[x y x x y x]])
+      end
+
+      it 'returns true' do
+        expect(game.horizontal_win?(player)).to be(true)
+      end
+    end
+
+    context 'when game has not been won horizontally' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y x y y y x], %w[x y x x x y], %w[x y x x x y]])
+      end
+
+      it 'returns false' do
+        expect(game.horizontal_win?(player)).to be(false)
+      end
+    end
+  end
+
+  describe '#diagonal_win?' do
+    let(:player) { instance_double(Player, name: 'Matt', mark: 'y') }
+
+    context 'when game has been won diagonally' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y x y y y x], %w[x y x x x y], %w[x y x x x y], %w[y x y y y x], %w[y x y y y x], %w[y x y y y x]])
+      end
+
+      it 'returns true' do
+        expect(game.diagonal_win?(player)).to be(true)
+      end
+    end
+
+    context 'when game has not been won diagonally' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y x y y y x], %w[x y x x x y], %w[x y x x x y], %w[y x y y y x], %w[y x y y y x], %w[y x x y y x]])
+      end
+
+      it 'returns false' do
+        expect(game.diagonal_win?(player)).to be(false)
+      end
+    end
+  end
+
+  describe '#tie?' do
+    context 'when all spaces are filled up' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, Array.new(7, %w[x y x x x y]))
+      end
+
+      it 'returns true' do
+        expect(game.tie?).to be(true)
+      end
+    end
+
+    context 'when not all spaces are filled up' do
+      before do
+        game.instance_variable_set(:@chosen_spots_by_columns, Array.new(7, %w[x y x x y]))
+      end
+
+      it 'returns false' do
+        expect(game.tie?).to be(false)
       end
     end
   end
