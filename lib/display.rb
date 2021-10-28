@@ -10,6 +10,7 @@ class Display
   end
 
   def show_display
+    system('clear') || system('cls')
     puts @row_separator
     @rows.each { |row| puts row; puts @row_separator }
     puts @column_numbers
