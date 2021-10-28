@@ -2,7 +2,6 @@
 
 require_relative '../lib/display'
 require_relative '../lib/player'
-require 'matrix'
 
 # class to play a game of Connect Four
 class ConnectFour
@@ -11,43 +10,48 @@ class ConnectFour
 
   def initialize
     @display = Display.new
-    @red_circle = "\u{1F534}".encode('utf-8')
-    @blue_circle = "\u{1F535}".encode('utf-8')
-    @chosen_spots_by_columns = Array.new(7, [])
+    @red_circle = 'O'
+    @blue_x = 'X'
+    @chosen_spots_by_columns = Array.new(7) { [] }
     @string_column_locations = [2, 6, 10, 14, 18, 22, 26]
+    @winner = nil
+    @tie = false
   end
 
   def play_game
     establish_players
     @current_player = @player_one
     @display.show_display
-    until game_over?(@current_player)
+    loop do
       play_move(@current_player)
+      return ending_message if game_over?(@current_player)
+
       @current_player = @current_player == @player_one ? @player_two : @player_one
     end
-    ending_message
   end
 
   def establish_players
     puts 'Player 1, what is your name?'
-    @player_one = Player.new(gets.chomp, @blue_circle)
+    @player_one = Player.new(gets.chomp, @blue_x)
     puts 'Player 2, what is your name?'
     @player_two = Player.new(gets.chomp, @red_circle)
   end
 
-  def play_move(player, input = nil)
+  def play_move(player)
     puts "#{player.name}, which column would you like to drop your piece into?"
-    input = gets.chomp until input_valid?(input.to_i)
-    place_mark(player.mark, input.to_i)
+    loop do
+      input = gets.chomp
+      return place_mark(player.mark, input.to_i) if input_valid?(input.to_i)
+    end
   end
 
   def input_valid?(input)
     if [*1..7].include?(input)
       return true unless column_full?(input)
 
-      puts "That column is full. Enter an open column like: (#{@open_columns})"
+      puts 'That column is full. Select an open column.'
     else
-      puts "That is not a valid input. Enter an open column like: (#{@open_columns})"
+      puts 'That is not a valid input. Enter an open column'
     end
     false
   end
@@ -91,7 +95,7 @@ class ConnectFour
   end
 
   def pad_columns
-    padded_arr = @chosen_spots_by_columns.dup
+    padded_arr = @chosen_spots_by_columns.dup.map(&:dup)
     padded_arr.each do |column|
       padding = 6 - column.size
       padding.times { column << nil }
@@ -99,7 +103,7 @@ class ConnectFour
   end
 
   def diagonal_win?(player)
-    chosen_spots_by_diagonals = create_diagonals
+    chosen_spots_by_diagonals = create_diagonals(pad_columns.transpose) + create_diagonals(pad_columns.transpose.reverse)
     chosen_spots_by_diagonals.any? do |diagonal|
       next if diagonal.size < 4
 
@@ -109,8 +113,7 @@ class ConnectFour
     end
   end
 
-  def create_diagonals
-    padded_rows = pad_columns.transpose
+  def create_diagonals(padded_rows)
     diagonals = Array.new(12)
     width = 7
     height = 6
@@ -137,6 +140,8 @@ class ConnectFour
   end
 
   def ending_message
+    puts "Way to go, #{@winner.name}! You win!" unless @winner.nil?
 
+    puts "It's a tie!" if @tie == true
   end
 end
