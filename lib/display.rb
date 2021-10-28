@@ -6,7 +6,7 @@ class Display
   def initialize
     @row_separator = '+---+---+---+---+---+---+---+'
     @column_numbers = '  1   2   3   4   5   6   7  '
-    @rows = Array.new(6, '|   |   |   |   |   |   |   |')
+    @rows = Array.new(6) { '|   |   |   |   |   |   |   |' }
   end
 
   def show_display
@@ -16,7 +16,8 @@ class Display
   end
 
   def update_display(x, y, mark)
-    rows[y].slice!(x)
-    rows[y].insert(x, mark)
+    rows[5 - y].slice!(x)
+    rows[5 - y].insert(x, mark)
+    show_display
   end
 end
