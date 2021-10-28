@@ -13,11 +13,13 @@ describe ConnectFour do
     context 'when #game_over? returns true' do
       before do
         allow(game).to receive(:establish_players)
+        allow(game.display).to receive(:show_display)
         allow(game).to receive(:game_over?).and_return(true)
+        allow(game).to receive(:play_move)
       end
 
       it 'does not #play_move' do
-        expect(game).not_to receive(:play_move)
+        expect(game).to receive(:play_move).once
         game.play_game
       end
 
@@ -30,11 +32,12 @@ describe ConnectFour do
     context 'when #game_over? returns false twice' do
       before do
         allow(game).to receive(:establish_players)
+        allow(game.display).to receive(:show_display)
         allow(game).to receive(:game_over?).and_return(false, false, true)
       end
       
       it '#play_move twice' do
-        expect(game).to receive(:play_move).twice
+        expect(game).to receive(:play_move).exactly(3).times
         game.play_game
       end
     end
@@ -63,12 +66,12 @@ describe ConnectFour do
       before do
         allow(game).to receive(:puts)
         allow(player).to receive(:name)
+        input = '1'
+        allow(game).to receive(:gets).and_return(input)
       end
 
       it 'receives input and verifies its validity' do
-        input = '1'
-        expect(game).to receive(:input_valid?).and_return(false, true)
-        expect(game).to receive(:gets).and_return(input)
+        expect(game).to receive(:input_valid?).and_return(true)
         expect(game).to receive(:place_mark)
         game.play_move(player)
       end
@@ -78,13 +81,13 @@ describe ConnectFour do
       before do
         allow(game).to receive(:puts)
         allow(player).to receive(:name)
+        invalid_input = 'a'
+        valid_input = '3'
+        allow(game).to receive(:gets).and_return(invalid_input, invalid_input, valid_input)
       end
 
       it 'receives #gets 3 times' do
-        invalid_input = 'a'
-        valid_input = '3'
-        expect(game).to receive(:input_valid?).and_return(false, false, false, true)
-        expect(game).to receive(:gets).exactly(3).times.and_return(invalid_input, invalid_input, valid_input)
+        expect(game).to receive(:input_valid?).and_return(false, false, true)
         expect(game).to receive(:place_mark)
         game.play_move(player)
       end
@@ -169,12 +172,15 @@ describe ConnectFour do
     let(:player) { instance_double(Player, name: 'Matt', mark: 'x') }
 
     context 'when input is 3' do
+      before do
+        allow(game.display).to receive(:update_display)
+      end
+
       it 'sends message to Display' do
         input = 3
         x = 10
         y = 0
-        display = game.display
-        expect(display).to receive(:update_display).with(x, y, player.mark)
+        expect(game.display).to receive(:update_display).with(x, y, player.mark)
         game.place_mark(player.mark, input)
       end
 
@@ -308,7 +314,7 @@ describe ConnectFour do
 
     context 'when game has not been won diagonally' do
       before do
-        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y x y y y x], %w[x y x x x y], %w[x y x x x y], %w[y x y y y x], %w[y x y y y x], %w[y x x y y x]])
+        game.instance_variable_set(:@chosen_spots_by_columns, [%w[x y x x x y], %w[y x y y y x], %w[x y x x x y], %w[x y x y x y], %w[y x y y y x], %w[y x y x y x], %w[y x x y y x]])
       end
 
       it 'returns false' do
@@ -345,11 +351,15 @@ describe Display do
 
   describe '#update_display' do
     context 'column 3, row 5 is selected' do
+      before do
+        allow(display).to receive(:show_display)
+      end
+
       it 'returns row with inserted mark' do
         x = 10
         y = 4
         mark = 'x'
-        expect { display.update_display(x, y, mark) }.to change { display.rows[y] }.from('|   |   |   |   |   |   |   |').to('|   |   | x |   |   |   |   |')
+        expect { display.update_display(x, y, mark) }.to change { display.rows[5 - y] }.from('|   |   |   |   |   |   |   |').to('|   |   | x |   |   |   |   |')
       end
     end
   end
